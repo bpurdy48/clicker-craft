@@ -14,7 +14,10 @@ in_shop = False
 mission = 100
 price = mission / 2
 cannot_buy = False
+keys = 0
 in_boss = False
+sclicks = 0
+smoney = 0
 
 steve = Actor("steve")
 if not in_boss:
@@ -22,14 +25,25 @@ if not in_boss:
 else:
     steve.pos=(CENTER_X, CENTER_Y + 100)
 
+
+zombie = Actor("zombie")
+zombiex = randint(0, WIDTH)
+zombiey = randint(0, HEIGHT)
+zombie.pos = CENTER_X, CENTER_Y
+zombie_health = 0
+in_boss_1 = False
+
 shop_button = Rect(0, 0, 240, 100)
 shop_button.move_ip(560, 0)
 
 boost_button = Rect(0, 0, 240, 100)
 boost_button.move_ip(CENTER_X - 100, CENTER_Y)
 
+key_button = Rect(0, 0, 240, 100)
+key_button.move_ip(CENTER_X - 100, CENTER_Y - 150)
+
 lobby_button = Rect(0, 0, 240, 100)
-lobby_button.move_ip(560, 600)
+lobby_button.move_ip(0, HEIGHT - 100)
 
 save_button = Rect(0, 0, 240, 100)
 save_button.move_ip(WIDTH - 240, HEIGHT - 100)
@@ -39,7 +53,7 @@ save_button.move_ip(WIDTH - 240, HEIGHT - 100)
 def draw():
     global in_shop
 
-    if in_shop ==  False:
+    if not in_shop and not in_boss:
         screen.blit("overworld", (0, CENTER_Y - 600))
         steve.draw()
         screen.draw.text("Clicks: " + str(clicks), topleft=(0,0), fontsize=60)
@@ -47,7 +61,16 @@ def draw():
         screen.draw.text("Click " + str(mission) + " times", topleft=(0,128))
         screen.draw.filled_rect(shop_button, "red")
         screen.draw.textbox("Shop", shop_button, color="black")
-        screen.draw.filled_rect(lobby_button, "red")
+        screen.draw.filled_rect(lobby_button, color="red")
+        screen.draw.textbox("Lobby", lobby_button, color="black")
+        screen.draw.filled_rect(save_button, "red")
+        screen.draw.textbox("Save and quit", save_button, color="black")
+
+    elif in_boss:
+        screen.blit("cave",(0, 0))
+        zombie.draw()
+        steve.draw()
+    
     else:
         screen.fill("green")
         screen.draw.filled_rect(shop_button, "red")
@@ -57,46 +80,95 @@ def draw():
         screen.draw.text("Clicks: " + str(clicks), topleft=(0,0), fontsize=60, color = "black")
         screen.draw.filled_rect(boost_button, "red")
         screen.draw.textbox("Upgrade Click Power $" + str(mission / 2), boost_button, color="black")
+        screen.draw.filled_rect(key_button, "red")
+        screen.draw.textbox("Key $100", key_button, color="black")
     return
         
 def on_mouse_down(pos):
-    global clicks, cpc, in_shop, money, mission
-    if steve.collidepoint(pos):
+    global clicks, cpc, in_shop, money, mission, sclicks
+    if steve.collidepoint(pos) and not in_boss:
         if not in_shop:
             clicks = clicks + cpc
             money = money + cpc
     if shop_button.collidepoint(pos):
-        if not in_shop:
+        if not in_shop and not in_boss:
             price = mission / 2
             in_shop = True
 
         elif in_shop:
             in_shop = False
+
+    if save_button.collidepoint(pos):
+            if not in_shop and not in_boss:
+                file = open("clicks.txt", "r+")
+                sclicks = clicks
+                file.seek(0)
+                file.truncate(0)
+                file.write(str(sclicks))
+                sclicks = int(sclicks)
+                file.close()
+                file = open("money.txt", "r+")
+                smoney = money
+                file.seek(0)
+                file.truncate(0)
+                file.write(str(smoney))
+                smoney = int(smoney)
+                file.close()
+                exit()
     
     if boost_button.collidepoint(pos):
         if in_shop:
             if money < mission / 2:
                 cannot_buy = True  
             else:
-                cps = cps + 1
+                cps = cpc + 1
                 money = money - mission / 2
-                
+
+def save():
+    global sclicks, clicks, money, smoney
+    file = open("clicks.txt", "r+")
+    sclicks = file.read()
+    clicks = int(sclicks)
+    file.close()
+    file = open("money.txt", "r+")
+    smoney = file.read()
+    money = int(smoney)
+
+save()
 music.play("calm1")
 
 def update():
     global current_mission, mission, clicks, cpc
     if clicks > mission - 1:
         mission = mission * 10
-        
-    return
+    if in_boss:
+        if keyboard.left and steve.x != 0:
+            steve.x -= 5
+        if keyboard.right and steve.x != WIDTH:
+            steve.x += 5
+        if keyboard.up and steve.y != 0:
+            steve.y -= 5
+        if keyboard.down and steve.y != HEIGHT:
+            steve.y += 5
+
+        if not in_boss:
+            steve.pos = CENTER_X, CENTER_Y
+
 
 def zombie_behavior():
-    pass
+    global in_boss, in_boss_1, zombiex, zombiey
+    if in_boss and in_boss_1:
+        while zombie.x != zombiex:
+            if zombiex > WIDTH and zombie.x > WIDTH:
+                pass
 
 def steve_position():
     if not in_boss:
         steve.pos=(CENTER_X, CENTER_Y)
     else:
         steve.pos=(CENTER_X, CENTER_Y + 100)
+
+def boss_setup():
+    in_boss = True
     
 pgzrun.go()
