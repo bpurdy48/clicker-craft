@@ -57,7 +57,7 @@ Finally, we are actually covering the game!
 3) type in: pgzrun
 4) drag and drop steve-clicker.py(that was the original name of the game) into the terminal
 5) press enter
-6) if you are using mu, just click play and skip the 4th and 5th step
+6) if you are using mu, just click play and skip the 4th and 5th step. Just load the file
 7) You should have the game open!
 
-Thanks for downloading and playing clicker craft!
+Thanks for downloading and playing clicker craft! I am a middle school student currently(2021) and would really appreciate if you shared my game with other! 
